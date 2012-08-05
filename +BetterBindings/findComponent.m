@@ -1,5 +1,5 @@
 function obj = findComponent(parent,classname)
-% findComponent - Search Swing 'parent' for a component of class 'classname'
+% findComponent  Search Java AWT 'parent' for a component of class 'classname'
 % - Recursively descends through a GUI hierarchy depth-first with getComponent
 % - Returns the first object of the class it discovers (or empty if not found)
 obj = [];

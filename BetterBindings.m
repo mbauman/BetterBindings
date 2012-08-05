@@ -17,15 +17,20 @@ end
 
 end
 
+%% Top level functions
 function install()
-
 javaaddpath(getJarFilepath());
-cmdwin = BetterBindings.getCommandWindow();
-editor = BetterBindings.getEditor();
 
-makeDefaultActionIgnoreModifiedKeystrokes([cmdwin,editor]);
-attachBetterActionMap(cmdwin,'BetterCmdWinActionMap');
-attachBetterActionMap(editor,'BetterEditorActionMap');
+cw = BetterBindings.getCommandWindow();
+ed = BetterBindings.getEditor();
+
+makeDefaultActionIgnoreModifiedKeystrokes([cw,ed]);
+
+cwKit = BetterBindings.getPrivateJObj(cw,'fCWKit'); % R2011a
+attachBetterActionMap(cw,com.mbauman.betterbindings.BetterCmdWinKit(cwKit));
+
+edKit = ed.getEditorKit();
+attachBetterActionMap(ed,com.mbauman.betterbindings.BetterEditorKit(edKit));
 
 end
 
@@ -44,6 +49,10 @@ s = warning('off','MATLAB:GENERAL:JAVARMPATH:NotFoundInPath');
 javarmpath(getJarFilepath());
 warning(s);
 
+end
+
+function bind()
+error('unimplemented');
 end
 
 %% Attaching and removing the custom java elements
@@ -69,22 +78,18 @@ for t = textComponents
 end
 end
 
-function attachBetterActionMap(textComponents,klass)
-klass = [getPackageName() '.' klass];
-for t = textComponents
-    actionMap = t.getActionMap();
-    if ~strcmp(actionMap.class(),klass)
-        newMap = feval(klass,actionMap);
-        t.setActionMap(newMap);
-    end
+function attachBetterActionMap(textComponent,editorKit)
+actionMap = textComponent.getActionMap();
+if ~strcmp(actionMap.class(),'BetterActionMap')
+    newMap = com.mbauman.betterbindings.BetterActionMap(actionMap,editorKit);
+    textComponent.setActionMap(newMap);
 end
 end
 
 function revertActionMap(textComponents)
 for t = textComponents
     map = t.getActionMap();
-    if any(strcmp(map.class(),{[getPackageName() '.BetterCmdWinActionMap'],...
-                               [getPackageName() '.BetterEditorActionMap']}))
+    if strcmp(map.class(),[getPackageName() '.BetterActionMap'])
         oldMap = map.getParent();
         t.setActionMap(oldMap);
     end
